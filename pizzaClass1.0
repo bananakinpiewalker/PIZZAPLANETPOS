@@ -1,0 +1,58 @@
+package pizzaPlanet;
+
+import java.util.ArrayList;
+
+public class MenuItem {
+	String type;
+	String name;
+	double total;
+	
+	public MenuItem(String t, String n, double p) {
+		super();
+		this.type = t;
+		this.name = n;
+		this.total = p;
+	}
+	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public double getTotal() {
+		return total;
+	}
+
+	public void setTotal(double total) {
+		this.total = total;
+	}
+
+	public MenuItem() {
+		type = null;
+		name = "";
+		total = 0;
+	}
+	
+	//SODA CONSTRUCTOR NOT A PIZZA!!!!!!!!!!!!!
+	public MenuItem(String t) {
+		type = t;
+		name = "Soda";
+		total = 3;
+	}
+
+	@Override
+	public String toString() {
+		return type + " " + name + " " + total;
+	}
+}
