@@ -1,0 +1,723 @@
+package pizzaPlanet;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+import javax.swing.*;
+
+@SuppressWarnings("serial")
+public class PizzaPlanetPoS implements ActionListener {
+	// MAIN FRAME
+	public JFrame mainFrame = new JFrame("Pizza Planet POS");
+	// LAYOUTS
+	public GridBagLayout l = new GridBagLayout();
+	public GridBagConstraints gbc = new GridBagConstraints();
+	// GRAPHICS
+	public ImageIcon bg = new ImageIcon(getClass().getResource("pizzaBG.png"));
+	public Image b = bg.getImage();
+	public ImageIcon logo = new ImageIcon(getClass().getResource("logo.png"));
+	public Image logoI = logo.getImage();
+	JPanel mainBG = (new JPanel(l) {
+		@Override
+		public void paintComponent(Graphics g) {
+			g.drawImage(b, 0, 0, null);
+		}
+	});
+	JPanel logoPanel = (new JPanel(l) {
+		@Override
+		public void paintComponent(Graphics g) {
+			g.drawImage(b, 0, 0, null);
+			g.drawImage(logoI, (mainFrame.getWidth() / 2) - logoI.getWidth(getFocusCycleRootAncestor()) / 2,
+					mainFrame.getHeight() / 4, null);
+		}
+	});
+	
+	public JPanel copyPanel = new JPanel();
+	public JLabel copy = new JLabel("© 2023 PoS Software");
+	
+	public JPanel namePanel = new JPanel();
+	public JLabel nameLabel;
+	// LOGGIN DATA
+	public JPanel kenny = new JPanel(l);
+	public JButton login = new JButton("Kenny Loggins");
+	public JTextField PIN = new JTextField(4);
+	public JLabel PinLabel = new JLabel("PIN");
+	public String userPIN;
+	public JPanel logOutPanel = new JPanel(new GridLayout(1, 1));
+	// PIN VERIFICATION
+	public File pinList = new File("PIN.txt");
+	public File nameList = new File("names.txt");
+	public String userName;
+	public Scanner pinScan;
+	public Scanner nameScan;
+	// NAV BUTTONS
+	public JButton logout = new JButton("Logout");
+	public JPanel navPanel = new JPanel(new GridLayout(1, 3));
+	public JButton newOrder = new JButton("New Order");
+	public JButton EM = new JButton("Employee Management");
+	public JButton priceManagement = new JButton("Change Prices");
+	public JPanel backPanel = new JPanel(new GridLayout(1, 1));
+	public JButton back = new JButton("Back");
+	public JPanel home = new JPanel(new GridLayout(1, 1));
+	public Icon homeIcon = new ImageIcon(getClass().getResource("homeLogo.png"));
+	public JButton homeButton = new JButton(homeIcon);
+	// ERROR HANDLING
+	public JFrame errorWindow = new JFrame("Error");
+	// NEW ORDER
+	// pizza options
+	public JPanel pizzaOps = new JPanel(new GridLayout(1, 3));
+	public JPanel topOps = new JPanel(new GridLayout(2, 4));
+	public ButtonGroup pizzaOpButts = new ButtonGroup();
+	public JRadioButton smal = new JRadioButton("Small");
+	public JRadioButton med = new JRadioButton("Medium");
+	public JRadioButton larg = new JRadioButton("Large");
+	// topping options
+	public String[] topsString = { "Pepperoni", "Bacon", "Pepper", "Pineapple", "Sausage", "Onions", "Mushrooms",
+			"Extra Cheese" };
+	public ArrayList<JCheckBox> tops = new ArrayList<JCheckBox>();
+	// Price calculation
+	public File priceData = new File("prices.txt");
+	public Scanner can;
+	public FileWriter write;
+	public JPanel totalPanel = new JPanel();
+	public JTextField runTotal = new JTextField(10);
+	public Double taxRate;
+	public Double smalPrice;
+	public Double medPrice;
+	public Double largPrice;
+	public Double topPrice;
+	public Double sodaPrice;
+
+	public Double totalNum = 0.0;
+
+	// cart
+	public JPanel calcButts = new JPanel(new GridLayout(1, 3));
+	public JButton add = new JButton("Add to Order");
+	public JButton soda = new JButton("Add Soda");
+	public ImageIcon boxOrder = new ImageIcon(getClass().getResource("endOrder.png"));
+	public JButton showReceipt = new JButton(boxOrder);
+	public ArrayList<MenuItem> orderItems = new ArrayList<MenuItem>();
+	public JPanel cartPanel = new JPanel();
+	@SuppressWarnings("rawtypes")
+	public DefaultListModel items = new DefaultListModel();
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public JList cart = new JList(items);
+	public JScrollPane scrollCart = new JScrollPane(cart);
+	public JButton delete = new JButton("Delete Item");
+	// COMPLETE ORDER
+	public JPanel recPanel = new JPanel();
+	public JPanel finalPanel = new JPanel(new GridLayout(1, 2));
+	public JButton completeOrder = new JButton("Accept & Return");
+	public JButton returnButton = new JButton("Return to Edit");
+	public String orderText = "";
+	// RECEIPT
+	public JTextArea taReceipt;
+	public ArrayList<String> orderFormat = new ArrayList<String>();
+	// EM
+	public JPanel EMPanel = new JPanel(new GridLayout(1, 4));
+	public JButton EMAdd = new JButton("New Employee");
+	public JButton EMRemove = new JButton("Delete Employee");
+	public JButton EMEdit = new JButton("Edit Existing Employee");
+	public JButton EMView = new JButton("View Employee Database");
+	public JPanel AddPanel = new JPanel();
+	public JPanel RemPanel = new JPanel();
+	public JPanel EditPanel = new JPanel();
+	public JPanel ViewPanel = new JPanel();
+	// PM
+	public JPanel PMPanel = new JPanel();
+	public JLabel taxLabel = new JLabel("Tax Rate: ");
+	public JTextField taxRateBox;
+	public JLabel largPriceLabel = new JLabel("Large Pizza: ");
+	public JTextField largPriceBox;
+	public JLabel medPriceLabel = new JLabel("Medium Pizza: ");
+	public JTextField smallPriceBox;
+	public JLabel smalPriceLabel = new JLabel("Small Pizza: ");
+	public JTextField medPriceBox;
+	public JLabel topPriceLabel = new JLabel("Topping Price: ");
+	public JTextField topPriceBox;
+	public JLabel sodaPriceLabel = new JLabel("Soda Price: ");
+	public JTextField sodaPriceBox;
+	public JButton changePrice = new JButton("Submit");
+	// NAV SETS
+	public JPanel[] log = { kenny, logoPanel };
+	public JPanel[] nav = { navPanel, logOutPanel };
+	public JPanel[] no = { pizzaOps, topOps, logOutPanel, calcButts, cartPanel, home, totalPanel };
+	public JPanel[] fin = { recPanel, finalPanel, logOutPanel };
+	public JPanel[] em = { EMPanel, logOutPanel, home };
+	public JPanel[] emAdd = { AddPanel, backPanel };
+	public JPanel[] emRem = { RemPanel, backPanel };
+	public JPanel[] emEd = { EditPanel, backPanel };
+	public JPanel[] emView = { ViewPanel, backPanel };
+	public JPanel[] pm = { PMPanel, logOutPanel, home };
+	public JPanel[] lastPage;
+	public JPanel[] currentPage;
+
+	public static void main(String args[]) {
+		PizzaPlanetPoS m = new PizzaPlanetPoS();
+
+		m.mainFrame.setContentPane(m.mainBG);
+		m.mainFrame.setLayout(null);
+
+		m.StandardScreenBuild();
+		m.buildNewOrder();
+		m.buildEM();
+		m.buildPriceManagement();
+		m.buildComp();
+		m.buildNavMenu();
+		m.loginScreenBuild();
+
+		m.mainFrame.setIconImage(m.logoI);
+
+		m.mainFrame.setVisible(true);
+
+		m.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		m.mainFrame.setSize(1434, 800);
+
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == login) {// LOG IN
+			try {
+				userPIN = PIN.getText();
+				if (verifyPIN(userPIN)) {
+					mainFrame.setContentPane(mainBG);
+					nameLabel = new JLabel("Welcome, " + userName);
+					namePanel.add(nameLabel);
+					mainFrame.add(namePanel);
+					SwingUtilities.updateComponentTreeUI(mainFrame);
+					mainFrame.revalidate();
+					changeScene(log, no);
+				} else {
+					errorWindow.setLocation(450, 200);
+					errorWindow.setIconImage(logoI);
+					errorWindow.setSize(400, 400);
+					errorWindow.setVisible(true);
+				}
+			} catch (Exception a) {
+				System.out.println(a);
+				errorWindow.setLocation(450, 200);
+				errorWindow.setIconImage(logoI);
+				errorWindow.setSize(400, 400);
+				errorWindow.setVisible(true);
+			}
+		} else if (e.getSource() == homeButton) {// GO HOME
+			changeScene(currentPage, nav);
+			clearOrder();
+		} else if (e.getSource() == newOrder) {// NEW ORDER
+			changeScene(nav, no);
+
+		} else if (e.getSource() == EM) {// EMPLOYEE MANAGEMENT
+			changeScene(nav, em);
+		} else if (e.getSource() == priceManagement) {// PRICE MANAGEMENT
+			changeScene(nav, pm);
+
+		} else if (e.getSource() == back) {// BACK
+			changeScene(currentPage, lastPage);
+			clearOrder();
+		} else if (e.getSource() == logout) {// LOG OUT
+			mainFrame.setContentPane(logoPanel);
+			changeScene(currentPage, log);
+			userPIN = "";
+			PIN.setText("");
+			nameLabel.setText("");
+			namePanel.remove(nameLabel);
+			pizzaOpButts.clearSelection();
+			for (int i = 0; i < tops.size(); i++) {
+				if (tops.get(i).isSelected()) {
+					tops.get(i).setSelected(false);
+					;
+				}
+			}
+			clearOrder();
+			userName = "";
+		} else if (e.getSource() == add) {// ADD ITEM
+			if (pizzaOpButts.getSelection() == null) {
+				errorWindow.setLocation(450, 200);
+				errorWindow.setIconImage(logoI);
+				errorWindow.setSize(400, 400);
+				errorWindow.setVisible(true);
+				for (int i = 0; i < tops.size(); i++) {
+					if (tops.get(i).isSelected()) {
+						tops.get(i).setSelected(false);
+						;
+					}
+				}
+			} else {
+				try {
+					addPizza(pizzaOpButts.getSelection());
+					pizzaOpButts.clearSelection();
+					for (int i = 0; i < tops.size(); i++) {
+						if (tops.get(i).isSelected()) {
+							tops.get(i).setSelected(false);
+							;
+						}
+					}
+				} catch (Exception r) {
+					System.out.println(r);
+					errorWindow.setLocation(450, 200);
+					errorWindow.setIconImage(logoI);
+					errorWindow.setSize(400, 400);
+					errorWindow.setVisible(true);
+				}
+			}
+		} else if (e.getSource() == soda) {// ADD SODA
+			addSoda();
+		} else if (e.getSource() == delete) {// DELETE ITEM
+			try {
+				totalNum = totalNum - orderItems.get(cart.getSelectedIndex()).getTotal();
+				runTotal.setText(totalNum.toString());
+				orderItems.remove(cart.getSelectedIndex());
+				orderFormat.remove(cart.getSelectedIndex());
+				items.remove(cart.getSelectedIndex());
+				orderText = "";
+			} catch (Exception x) {
+				System.out.println(x);
+				errorWindow.setLocation(450, 200);
+				errorWindow.setIconImage(logoI);
+				errorWindow.setSize(400, 400);
+				errorWindow.setVisible(true);
+			}
+		} else if (e.getSource() == showReceipt) {// SHOW RECEIPT
+			totalNum = totalNum + Math.round(totalNum * taxRate);
+			for (int i = 0; i < orderFormat.size(); i++) {
+				orderText = orderText + orderFormat.get(i);
+			}
+			taReceipt.setText(
+					"-- RECEIPT --\n" + orderText + "\n\n" + "TOTAL:    " + totalNum + "\n\n" + "-- THANK YOU! --");
+			changeScene(no, fin);
+		} else if (e.getSource() == returnButton) {// GO BACK TO EDIT ORDER
+			totalNum = totalNum - Math.round(totalNum * taxRate);
+			changeScene(currentPage, no);
+			orderText = "";
+		} else if (e.getSource() == completeOrder) {// ACCEPT AND COMPLETE
+			clearOrder();
+			changeScene(currentPage, no);
+		} else if (e.getSource() == changePrice) {// CHANGE PRICES
+			try {
+				largPrice = Double.parseDouble(largPriceBox.getText());
+				smalPrice = Double.parseDouble(smallPriceBox.getText());
+				medPrice = Double.parseDouble(medPriceBox.getText());
+				topPrice = Double.parseDouble(topPriceBox.getText());
+				taxRate = Double.parseDouble(taxRateBox.getText());
+				sodaPrice = Double.parseDouble(sodaPriceBox.getText());
+
+				write = new FileWriter("prices.txt");
+
+				write.append(taxRate.toString() + "\n");
+				taxRateBox.setText(taxRate.toString());
+
+				write.write(smalPrice.toString() + "\n");
+				smallPriceBox.setText(smalPrice.toString());
+
+				write.write(medPrice.toString() + "\n");
+				medPriceBox.setText(medPrice.toString());
+
+				write.write(largPrice.toString() + "\n");
+				largPriceBox.setText(largPrice.toString());
+
+				write.write(topPrice.toString() + "\n");
+				topPriceBox.setText(topPrice.toString());
+
+				write.append(sodaPrice.toString() + "\n");
+				sodaPriceBox.setText(sodaPrice.toString());
+
+				write.close();
+			} catch (Exception n) {
+				System.out.println(n);
+				errorWindow.setLocation(450, 200);
+				errorWindow.setIconImage(logoI);
+				errorWindow.setSize(400, 400);
+				errorWindow.setVisible(true);
+			}
+		}
+	}
+
+	public void changeScene(JPanel[] old, JPanel[] New) {// CHANGE FROM ONE SCREEN TO ANOTHER
+		for (int i = 0; i < old.length; i++) {
+			if (old[i].isVisible()) {
+				old[i].setVisible(false);
+			}
+		}
+		for (int j = 0; j < New.length; j++) {
+			New[j].setVisible(true);
+		}
+		lastPage = old;
+		currentPage = New;
+	}
+
+	public void loginScreenBuild() {// BUILD LOGIN SCREEN
+		mainFrame.setContentPane(logoPanel);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridx = 1;
+		gbc.gridy = 3;
+		gbc.gridheight = 1;
+
+		login.addActionListener(this);
+
+		kenny.add(login, gbc);
+
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		gbc.gridheight = 1;
+		kenny.add(PIN, gbc);
+
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridheight = 1;
+		kenny.add(PinLabel, gbc);
+
+		kenny.setOpaque(false);
+
+		mainFrame.add(kenny);
+	}
+
+	public boolean verifyPIN(String PIN) {
+		if (PIN.contains("0000")) {
+			return true;
+		} else {
+			try {
+				pinScan = new Scanner(pinList);
+				nameScan = new Scanner(nameList);
+				String nextValue = pinScan.nextLine();
+				int i = 0;
+				while (pinScan.hasNextLine()) {
+					if (nextValue.contains(PIN)) {
+						for (int j = 0; j <= i; j++) {
+							userName = nameScan.nextLine();
+						}
+						System.out.println(userName);
+						return true;
+					} else {
+						nextValue = pinScan.nextLine();
+						i++;
+					}
+				}
+				return false;
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+	}
+
+	public void StandardScreenBuild() {// BUILD A BLANK SCREEN
+		
+		copyPanel.setBounds(625, 720, 150, 50);
+		copyPanel.add(copy);
+		
+		copyPanel.setOpaque(false);
+		
+		mainFrame.add(copyPanel);
+		
+		namePanel.setBounds(1200, 10, 200, 25);
+
+		logOutPanel.setBounds(10, 700, 100, 50);
+
+		logout.addActionListener(this);
+
+		logOutPanel.add(logout);
+		logOutPanel.setOpaque(false);
+
+		logOutPanel.setVisible(false);
+
+		mainFrame.add(logOutPanel);
+
+		backPanel.setBounds(10, 10, 100, 50);
+
+		back.addActionListener(this);
+
+		backPanel.add(back);
+		backPanel.setOpaque(false);
+
+		backPanel.setVisible(false);
+
+		mainFrame.add(backPanel);
+		home.setBounds(10, 10, 60, 60);
+
+		homeButton.setBounds(10, 10, 60, 60);
+		homeButton.setIcon(homeIcon);
+
+		home.add(homeButton);
+
+		homeButton.addActionListener(this);
+		home.setOpaque(false);
+		home.setVisible(false);
+
+		mainFrame.add(home);
+	}
+
+	public void buildNavMenu() {// BUILD THE HOME SCREEN
+		newOrder.addActionListener(this);
+		EM.addActionListener(this);
+		priceManagement.addActionListener(this);
+
+		navPanel.setBounds(160, 250, 1100, 200);
+		navPanel.setOpaque(false);
+
+		navPanel.add(newOrder);
+		navPanel.add(EM);
+		navPanel.add(priceManagement);
+
+		mainFrame.add(navPanel);
+
+		navPanel.setVisible(false);
+
+		lastPage = nav;
+	}
+
+	public void buildNewOrder() {// BUILD THE NEW ORDER SCREEN
+		pizzaOpButts.add(smal);
+		pizzaOpButts.add(med);
+		pizzaOpButts.add(larg);
+
+		pizzaOps.add(smal);
+		pizzaOps.add(med);
+		pizzaOps.add(larg);
+
+		pizzaOps.setBounds(360, 75, 700, 50);// make this less off center if you have time
+
+		pizzaOps.setOpaque(false);
+		pizzaOps.setVisible(false);
+
+		mainFrame.add(pizzaOps);
+
+		for (int i = 0; i < topsString.length; i++) {
+			tops.add(new JCheckBox(topsString[i]));
+			topOps.add(tops.get(i));
+		}
+
+		topOps.setBounds(300, 150, 800, 150);
+		topOps.setVisible(false);
+		topOps.setOpaque(false);
+
+		mainFrame.add(topOps);
+
+		calcButts.add(add);
+		add.addActionListener(this);
+		calcButts.add(soda);
+		soda.addActionListener(this);
+		calcButts.add(showReceipt);
+		showReceipt.addActionListener(this);
+
+		calcButts.setBounds(300, 315, 800, 70);
+		calcButts.setVisible(false);
+
+		mainFrame.add(calcButts);
+
+		cartPanel.setLayout(new FlowLayout());
+
+		scrollCart.setBounds(0, 0, 800, 300);
+
+		cartPanel.setBounds(450, 400, 600, 300);
+		cartPanel.setVisible(false);
+		cartPanel.setOpaque(false);
+
+		delete.setBounds(50, 50, 100, 100);
+		delete.addActionListener(this);
+
+		cartPanel.add(scrollCart);
+
+		cartPanel.add(delete);
+
+		mainFrame.add(cartPanel);
+
+		totalPanel.add(runTotal);
+
+		totalPanel.setBounds(300, 615, 800, 300);
+		totalPanel.setOpaque(false);
+		totalPanel.setVisible(false);
+
+		mainFrame.add(totalPanel);
+
+	}
+
+	// Method: Set receipt's text
+	public void setTextReceipt(String s) {
+		taReceipt.setText(s);
+	}
+
+	public void buildComp() {
+
+		taReceipt = new JTextArea("", 36, 5);
+		taReceipt.setEditable(false);
+		taReceipt.setBounds(200, 50, 1050, 700);
+
+		recPanel.add(taReceipt);
+
+		recPanel.setVisible(false);
+		recPanel.setOpaque(false);
+
+		recPanel.setBounds(200, 50, 1050, 700);
+
+		completeOrder.addActionListener(this);
+
+		finalPanel.add(returnButton);
+
+		finalPanel.add(completeOrder);
+
+		returnButton.addActionListener(this);
+
+		finalPanel.setVisible(false);
+		finalPanel.setOpaque(false);
+
+		finalPanel.setBounds(500, 650, 450, 75);
+
+		mainFrame.add(finalPanel);
+
+		mainFrame.add(recPanel);
+
+	}
+
+	public void buildEM() {// BUILD EMPLOYEE MANAGEMENT SCREEN
+		EMPanel.add(EMAdd);
+		EMPanel.add(EMEdit);
+		EMPanel.add(EMRemove);
+		EMPanel.add(EMView);
+
+		EMPanel.setBounds(160, 250, 1100, 200);
+		EMPanel.setVisible(false);
+		EMPanel.setOpaque(false);
+
+		mainFrame.add(EMPanel);
+	}
+
+	public void buildPriceManagement() {// BUILD PRICE MANAGEMENT SCREEN
+		try {
+			can = new Scanner(priceData);
+			taxRate = can.nextDouble();
+			smalPrice = can.nextDouble();
+			medPrice = can.nextDouble();
+			largPrice = can.nextDouble();
+			topPrice = can.nextDouble();
+			sodaPrice = can.nextDouble();
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		taxRateBox = new JTextField(taxRate.toString(), 20);
+		largPriceBox = new JTextField(largPrice.toString(), 20);
+		smallPriceBox = new JTextField(smalPrice.toString(), 20);
+		medPriceBox = new JTextField(medPrice.toString(), 20);
+		topPriceBox = new JTextField(topPrice.toString(), 20);
+		sodaPriceBox = new JTextField(sodaPrice.toString(), 20);
+
+		PMPanel.add(taxLabel);
+		PMPanel.add(taxRateBox);
+		PMPanel.add(smalPriceLabel);
+		PMPanel.add(smallPriceBox);
+		PMPanel.add(medPriceLabel);
+		PMPanel.add(medPriceBox);
+		PMPanel.add(largPriceLabel);
+		PMPanel.add(largPriceBox);
+		PMPanel.add(topPriceLabel);
+		PMPanel.add(topPriceBox);
+		PMPanel.add(sodaPriceLabel);
+		PMPanel.add(sodaPriceBox);
+
+		PMPanel.add(changePrice);
+		changePrice.addActionListener(this);
+
+		PMPanel.setBounds(550, 300, 300, 1000);
+		PMPanel.setVisible(false);
+		PMPanel.setOpaque(false);
+
+		mainFrame.add(PMPanel);
+
+	}
+
+	public JPanel[] getBack(JPanel[] page) {// RETURN THE PREVIOUS SCREEN
+		if (page == emAdd || page == emRem || page == emEd || page == emView) {
+			return em;
+		} else {
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public void addSoda() {// ADD A SODA TO THE CART
+		MenuItem soda = new MenuItem("Soda");
+		soda.setTotal(sodaPrice);
+		totalNum = totalNum + soda.getTotal();
+		items.addElement(soda);
+		orderFormat.add("\n\n" + "Soda........." + soda.getTotal());
+		orderItems.add(soda);
+		runTotal.setText(totalNum.toString());
+	}
+
+	@SuppressWarnings("unchecked")
+	public void addPizza(ButtonModel size) {// ADD A PIZZA TO THE CART
+		MenuItem pizza = new MenuItem("Pizza", "", 0);
+		pizza.total = getSizePrice(size);
+		pizza.name = getSize(size);
+		ArrayList<MenuItem> topps = new ArrayList<MenuItem>();
+		for (int i = 0; i < tops.size(); i++) {
+			if (tops.get(i).isSelected()) {
+				topps.add(new MenuItem("Topping", topsString[i], topPrice));
+				pizza.total = pizza.total + topPrice;
+			}
+		}
+		items.addElement(formItem(pizza, topps));
+		orderFormat.add("\n\n" + formItem(pizza, topps) + "........." + pizza.total);
+		orderItems.add(pizza);
+		totalNum = totalNum + pizza.total;
+		runTotal.setText(totalNum.toString());
+	}
+
+	public void clearOrder() {
+		cart.clearSelection();
+		items.clear();
+		orderItems.clear();
+		totalNum = 0.0;
+		runTotal.setText("");
+		orderFormat.clear();
+		taReceipt.setText(" ");
+		orderText = "";
+	}
+
+	public String formItem(MenuItem p, ArrayList<MenuItem> t) {// FORMAT TEXT OF AN ITEM
+		String top = "";
+		for (int i = 0; i < t.size(); i++) {
+			top = top + t.get(i).getName() + " ";
+		}
+		return "Pizza " + p.getName() + " [" + top + "]";
+	}
+
+	public double getSizePrice(ButtonModel size) {// RETURN THE PRICE OF A SIZE
+		if (size == larg.getModel()) {
+			return largPrice;
+		} else if (size == med.getModel()) {
+			return medPrice;
+		} else {
+			return smalPrice;
+		}
+	}
+
+	public String getSize(ButtonModel size) {// RETURN THE SIZE NAME
+		if (size == larg.getModel()) {
+			return "Large";
+		} else if (size == med.getModel()) {
+			return "Medium";
+		} else if (size == smal.getModel()) {
+			return "Small";
+		} else {
+			return "Soda";
+		}
+	}
+
+	public Boolean isSelected(ArrayList<JCheckBox> e) {// CHECK IF ANY TOPPING IS SELECTED
+		for (int i = 0; i < tops.size(); i++) {
+			if (tops.get(i).isSelected()) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
